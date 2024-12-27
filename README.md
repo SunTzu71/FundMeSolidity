@@ -1,66 +1,70 @@
-## Foundry
+# FundMe Smart Contract
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Overview
+FundMe is a Solidity smart contract that allows users to fund the contract with ETH while ensuring a minimum USD value requirement. It uses Chainlink Price Feeds to convert ETH to USD values and includes functionality for withdrawing funds by the contract owner.
 
-Foundry consists of:
+## Features
+- Accept ETH funding from users
+- Minimum funding requirement in USD
+- Real-time ETH/USD price conversion using Chainlink
+- Owner-only withdrawal functionality
+- Tracking of funders and their contributed amounts
+- Fallback functions to handle direct ETH transfers
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Technical Details
 
-## Documentation
+### Core Functions
+- `fund()`: Allows users to send ETH to the contract, requiring a minimum USD value
+- `withdraw()`: Enables the owner to withdraw all funds and reset funder data
+- `getVersion()`: Returns the version of the Chainlink price feed being used
 
-https://book.getfoundry.sh/
+### View Functions
+- `getAddressToAmountFunded(address)`: Returns the amount funded by a specific address
+- `getFunder(uint256)`: Returns the funder's address at a specific index
+- `getOwner()`: Returns the contract owner's address
 
-## Usage
+### Price Converter Library
+- `getPrice()`: Fetches current ETH/USD price from Chainlink
+- `getConversionRate()`: Converts ETH amounts to USD values
 
-### Build
+### State Variables
+- `MINIMUM_USD`: Constant minimum funding amount (5 USD)
+- `i_owner`: Immutable contract owner address
+- `s_addressToAmountFunded`: Mapping of addresses to funded amounts
+- `s_funders`: Array of funder addresses
+- `s_priceFeed`: Chainlink price feed interface
 
-```shell
-$ forge build
-```
+### Modifiers
+- `onlyOwner`: Restricts function access to contract owner
 
-### Test
+## Requirements
+- Solidity ^0.8.26
+- Chainlink Price Feed contract
+- Minimum funding amount of 5 USD in ETH
 
-```shell
-$ forge test
-```
+## Installation & Setup
+1. Deploy with a valid Chainlink Price Feed address for ETH/USD
+2. Contract owner is set to deployer address
+3. Ensure proper network configuration for Chainlink integration
 
-### Format
+## Security Features
+- Immutable owner address
+- Access control via onlyOwner modifier
+- Custom error handling
+- Safe withdrawal pattern
+- Storage variables marked as private
 
-```shell
-$ forge fmt
-```
+## Events
+*Note: This contract does not implement any events. Consider adding events for:*
+- Funding received
+- Withdrawal executed
+- Owner actions
 
-### Gas Snapshots
+## Error Handling
+- Custom error: `FundMe__NotOwner()`
+- Require statements for:
+  - Minimum funding amount
+  - Successful fund transfers
 
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+## License
+MIT License
