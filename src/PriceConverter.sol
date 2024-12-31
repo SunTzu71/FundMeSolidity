@@ -4,6 +4,9 @@ pragma solidity ^0.8.26;
 import {AggregatorV3Interface} from "lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 library PriceConverter {
+    error PriceConverter__StalePrice();
+    error PriceConverter__InvalidPrice();
+
     /**
      * Retrieves the latest ETH/USD price from Chainlink price feed
      * See: https://docs.chain.link/data-feeds/price-feeds/addresses
@@ -11,7 +14,23 @@ library PriceConverter {
     function getPrice(
         AggregatorV3Interface priceFeed
     ) internal view returns (uint256) {
-        (, int256 answer, , , ) = priceFeed.latestRoundData();
+        (
+            uint80 roundId,
+            int256 answer, // startedAt (unused)
+            ,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
+
+        // Check for stale data
+        if (updatedAt == 0 || answeredInRound < roundId) {
+            revert PriceConverter__StalePrice();
+        }
+
+        // Check for invalid data
+        if (answer <= 0) {
+            revert PriceConverter__InvalidPrice();
+        }
         return uint256(answer * 10000000000);
     }
 
